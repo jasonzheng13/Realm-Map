@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import pool from "./config/database";
+import authRoutes from "./routes/auth";
 
 dotenv.config();
 
@@ -24,6 +25,9 @@ app.use(express.json());
 app.get("/api/health", (req: express.Request, res: express.Response) => {
   res.json({ status: "ok", message: "RealmMap server is running" });
 });
+
+// Routes
+app.use("/api/auth", authRoutes);
 
 // Socket.IO connection
 io.on("connection", (socket) => {
