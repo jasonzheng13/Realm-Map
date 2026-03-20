@@ -6,6 +6,7 @@ import { Server } from "socket.io";
 import pool from "./config/database";
 import authRoutes from "./routes/auth";
 import waypointRoutes from './routes/waypoints';
+import realmRoutes from './routes/realm';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.get("/api/health", (req: express.Request, res: express.Response) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use('/api/waypoints', waypointRoutes);
+app.use('/api/realms', realmRoutes);
 
 // Socket.IO connection
 io.on("connection", (socket) => {
