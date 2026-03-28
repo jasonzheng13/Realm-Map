@@ -5,8 +5,9 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import pool from "./config/database";
 import authRoutes from "./routes/auth";
-import waypointRoutes from './routes/waypoints';
+import createWaypointsRouter from './routes/waypoints';
 import realmRoutes from './routes/realm';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -31,17 +32,49 @@ app.get("/api/health", (req: express.Request, res: express.Response) => {
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use('/api/waypoints', waypointRoutes);
+app.use('/api/waypoints', createWaypointsRouter(io));
 app.use('/api/realms', realmRoutes);
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if(!token) return next(new Error('Authentication error'));
+
+  try{
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+      username: string;
+    };
+    socket.data.userID = decoded.id;
+    socket.data.username = decoded.username;
+    next();
+  }catch{
+    next(new Error('Invalid token'));
+  }
+});
 
 // Socket.IO connection
 io.on("connection", (socket) => {
-  console.log(`Player connected: ${socket.id}`);
+  console.log(`Player connected: ${socket.data.username}`);
+
+  socket.on("join-realm", async({realmID}: {realmID: string}) => {
+    const result = await pool.query(
+      'SELECT id FROM realm_members WHERE realm_id = $1 AND user_id = $2',
+      [realmID, socket.data.userID]
+    );
+    if(result.rows.length === 0){
+      socket.emit('error', {message: 'Not a member of this realm'});
+      return;
+    }
+    socket.join(realmID);
+    socket.emit('joined-realm', {realmID});
+    console.log(`${socket.data.username} joined realm ${realmID}`);
+  });
 
   socket.on("disconnect", () => {
     console.log(`Player disconnected: ${socket.id}`);
   });
 });
+
 
 const PORT = process.env.PORT || 3001;
 
