@@ -1,4 +1,25 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Make Leaflet map background transparent so our dimension color shows through */
+.leaflet-container {
+  background: transparent !important;
+}
+
+/* Remove default white popup styling — we use our own dark inline styles */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+}
+
+/* Hide the default Leaflet attribution (bottom right "Leaflet" text) */
+.leaflet-control-attribution {
+  display: none !important;
+}

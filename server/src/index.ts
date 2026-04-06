@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
 
   socket.on("join-realm", async({realmID}: {realmID: string}) => {
     const result = await pool.query(
-      'SELECT id FROM realm_members WHERE realm_id = $1 AND user_id = $2',
+      'SELECT * FROM realm_members WHERE realm_id = $1 AND user_id = $2',
       [realmID, socket.data.userID]
     );
     if(result.rows.length === 0){
