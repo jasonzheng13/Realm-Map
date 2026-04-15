@@ -33,7 +33,7 @@ const createWaypointsRouter = (io: Server) => {
 
   // POST /api/waypoints
   router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
-    const { realm_id, name, x, y, z, dimension, description } = req.body;
+    const { realm_id, name, x, y, z, dimension, note } = req.body;
     const userId = req.user!.id;
 
     if (!realm_id || !name || x == undefined || y == undefined || z == undefined || !dimension) {
@@ -42,10 +42,10 @@ const createWaypointsRouter = (io: Server) => {
 
     try {
       const result = await pool.query(
-        `INSERT INTO waypoints (realm_id, created_by, name, x, y, z, dimension, description)
+        `INSERT INTO waypoints (realm_id, created_by, name, x, y, z, dimension, note)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING *`,
-        [realm_id, userId, name, x, y, z, dimension, description || null]
+        [realm_id, userId, name, x, y, z, dimension, note || null]
       );
 
       const newWaypoint = result.rows[0];
